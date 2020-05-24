@@ -1,0 +1,33 @@
+---
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - joe
+      # - task-gnome-desktop
+      - task-mate-desktop
+
+
+- name: Check if No Machine is installed
+  command: dpkg-query -W nomachine
+  register: nomachine_check_deb
+  failed_when: nomachine_check_deb.rc > 1
+  changed_when: nomachine_check_deb.rc == 1
+- name: Download No Machine
+  get_url:
+    # from https://www.nomachine.com/download/linux&id=1
+    url: https://download.nomachine.com/download/6.10/Linux/nomachine_6.10.12_1_amd64.deb
+    dest: /var/tmp/nomachine.deb
+- name: Install No Machine
+  apt: deb="/var/tmp/nomachine.deb"
+  when: nomachine_check_deb.rc == 1
+
+
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - ffmpeg
+      - obs-studio

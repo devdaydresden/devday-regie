@@ -1,0 +1,7 @@
+.kitchen
+.pytest_cache
+.vaultpw
+backups/
+junit-*.xml
+playbook.retry
+roles/*.*

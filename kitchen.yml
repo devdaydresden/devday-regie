@@ -1,0 +1,30 @@
+---
+driver:
+  name: vagrant
+  customize:
+    memory: 4096
+    cpus: 4
+  network:
+    - ["private_network", {ip: "192.168.33.44"}]
+
+provisioner:
+  name: ansible_playbook
+  roles_path: roles
+  playbook: playbook.yml
+  hosts: kitchen
+  require_ansible_repo: true
+  ansible_verbose: true
+  ansible_version: latest
+  require_chef_for_busser: false
+  recursive_additional_copy_path:
+    - backups
+
+platforms:
+- name: debian/buster64
+
+verifier:
+  name: shell
+  command: py.test -p no:warnings --host="paramiko://${KITCHEN_USERNAME}@${KITCHEN_HOSTNAME}:${KITCHEN_PORT}?ssh_identity_file=${KITCHEN_SSH_KEY}" --junit-xml "junit-${KITCHEN_INSTANCE}.xml" "test/integration/${KITCHEN_SUITE}"
+
+suites:
+- name: regie

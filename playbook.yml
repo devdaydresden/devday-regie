@@ -1,0 +1,26 @@
+---
+- hosts: kitchen
+  tasks:
+    - name: Configure Kitchen and Vagrant
+      include_role:
+        name: kitchen-support
+    - name: Ensure group "docker" exists
+      group:
+        name: docker
+        state: present
+    - name: add vagrant user to docker group
+      user:
+        name: vagrant
+        append: yes
+        groups:
+        - docker
+
+- hosts: all
+  tasks:
+    - name: Update APT and upgrade all packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+    - name: Configure Gnome, NX, and OBS
+      include_role:
+        name: devday-regie

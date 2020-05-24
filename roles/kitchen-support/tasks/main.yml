@@ -1,0 +1,23 @@
+---
+- name: Copy GPG key unofficial VirtualBox repository
+  # wget -O files/lucas-gpg-key.asc 'https://db.debian.org/fetchkey.cgi?fingerprint=FEDEC1CB337BCF509F43C2243914B532F4DFBE99'
+  copy:
+    src: files/lucas-gpg-key.asc
+    dest: /tmp/lucas-gpg-key.asc
+- name: Add GPG key for unofficial VirtualBox repository
+  command: "apt-key add /tmp/lucas-gpg-key.asc"
+- name: Add unofficial VirtualBox repository
+  apt_repository:
+    repo: "deb https://people.debian.org/~lucas/virtualbox-buster/ ./"
+- name: Update APT and upgrade all packages
+  apt:
+    upgrade: yes
+    update_cache: yes
+- name: Install VirtualBox guest additions
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - virtualbox-guest-dkms
+      - virtualbox-guest-utils
+      - virtualbox-guest-x11
