@@ -5,3 +5,4 @@ backups/
 junit-*.xml
 playbook.retry
 roles/*.*
+roles/devday-regie/files/devday

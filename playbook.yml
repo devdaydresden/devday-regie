@@ -24,3 +24,8 @@
     - name: Configure Gnome, NX, and OBS
       include_role:
         name: devday-regie
+    - name: Install Docker
+      include_role:
+        name: geerlingguy.docker
+      vars:
+        docker_install_compose: true

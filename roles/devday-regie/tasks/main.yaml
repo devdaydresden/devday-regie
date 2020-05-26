@@ -22,6 +22,24 @@
 - name: Install No Machine
   apt: deb="/var/tmp/nomachine.deb"
   when: nomachine_check_deb.rc == 1
+- name: Switch to key-based authentication
+  lineinfile:
+    path: /usr/NX/etc/server.cfg
+    regexp: "^#?AcceptedAuthenticationMethods"
+    line: "AcceptedAuthenticationMethods NX-private-key"
+  notify: Restart NX server
+- name: Enable NX user database
+  lineinfile:
+    path: /usr/NX/etc/server.cfg
+    regexp: "^#?EnableUserDB"
+    line: "EnableUserDB 1"
+  notify: Restart NX server
+- name: Disable local user confirmation
+  lineinfile:
+    path: /usr/NX/etc/server.cfg
+    regexp: "^#?PhysicalDesktopAuthorization"
+    line: "PhysicalDesktopAuthorization 0"
+  notify: Restart NX server
 
 
 - name: Install packages
@@ -31,3 +49,36 @@
     packages:
       - ffmpeg
       - obs-studio
+
+- name: Add devday user
+  user:
+    name: devday
+    shell: /bin/bash
+    password: "{{ '2020' | password_hash('sha512') }}"
+- name: Add devady to allowed NX users
+  lineinfile:
+    path: /usr/NX/etc/users.db
+    regexp: "^devday,"
+    line: "devday,,,,,,,,"
+  notify: Restart NX server
+- name: Create devday NX config dir
+  file:
+    path: /home/devday/.nx/config
+    recurse: true
+    mode: "0700"
+    owner: devday
+    group: devday
+- name: Add NX login key
+  # https://www.nomachine.com/AR02L00785
+  copy:
+    src: files/devday.pub
+    dest: /home/devday/.nx/config/authorized.crt
+    mode: "0600"
+    owner: devday
+    group: devday
+
+- name: Configure auto login
+  lineinfile:
+    path: /etc/lightdm/lightdm.conf
+    regexp: "^#?autologin-user="
+    line: "autologin-user=devday"

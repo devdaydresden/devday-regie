@@ -36,3 +36,16 @@ kitchen verify
 ```
 ansible-playbook -i hosts.yml playbook.yml
 ```
+
+
+# Notes
+
+## Correct SSH key format
+
+The No Machine server does not understand private key files in the OpenSSH format, only ones in PEM format. Use the following command to create one in the correct format:
+
+```
+ssh-keygen -m PEM -b 4096 -f roles/devday-regie/files/devday
+```
+
+See https://www.nomachine.com/FR05Q03834.

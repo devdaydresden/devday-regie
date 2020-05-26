@@ -1,4 +1,3 @@
 ---
 # Install these with ansible-galaxy install -r requirements.yml
 - src: geerlingguy.docker
-- src: elnappo.nsd
