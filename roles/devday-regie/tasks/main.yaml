@@ -7,6 +7,7 @@
       - joe
       # - task-gnome-desktop
       - task-mate-desktop
+      - xvfb
 
 
 - name: Check if No Machine is installed
@@ -40,6 +41,21 @@
     regexp: "^#?PhysicalDesktopAuthorization"
     line: "PhysicalDesktopAuthorization 0"
   notify: Restart NX server
+- name: Copy X start script
+  copy:
+    src: files/startx.sh
+    dest: /etc/lightdm/startx.sh
+    mode: "0755"
+    owner: root
+    group: root
+- name: Use Xvfb instead of regular server
+  lineinfile:
+    path: /etc/lightdm/lightdm.conf
+    regexp: "^#?xserver-command="
+    line: "xserver-command=/etc/lightdm/startx.sh"
+  notify:
+    - Restart lightdm
+    - Restart NX server
 
 
 - name: Install packages
