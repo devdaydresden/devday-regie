@@ -57,15 +57,6 @@
     - Restart lightdm
     - Restart NX server
 
-
-- name: Install packages
-  apt:
-    name: "{{ packages }}"
-  vars:
-    packages:
-      - ffmpeg
-      - obs-studio
-
 - name: Add devday user
   user:
     name: devday
@@ -98,3 +89,6 @@
     path: /etc/lightdm/lightdm.conf
     regexp: "^#?autologin-user="
     line: "autologin-user=devday"
+
+- name: Install OBS
+  include: build-obs.yml

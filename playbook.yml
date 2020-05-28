@@ -17,6 +17,19 @@
 
 - hosts: all
   tasks:
+    - name: Add repos
+      apt_repository:
+        repo: "{{ item }}"
+        state: present
+      loop:
+        - "deb http://deb.debian.org/debian buster main contrib non-free"
+        - "deb-src http://deb.debian.org/debian buster main contrib non-free"
+        - "deb http://deb.debian.org/debian-security/ buster/updates main contrib non-free"
+        - "deb-src http://deb.debian.org/debian-security/ buster/updates main contrib non-free"
+        - "deb http://deb.debian.org/debian buster-updates main contrib non-free"
+        - "deb-src http://deb.debian.org/debian buster-updates main contrib non-free"
+        - "deb http://deb.debian.org/debian buster-backports main contrib non-free"
+        - "deb-src http://deb.debian.org/debian buster-backports main contrib non-free"
     - name: Update APT and upgrade all packages
       apt:
         upgrade: yes
