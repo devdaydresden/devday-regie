@@ -5,7 +5,9 @@
   vars:
     packages:
       - joe
-      # - task-gnome-desktop
+      - libnginx-mod-rtmp
+      - mumble-server
+      - nginx-extras
       - task-mate-desktop
       - xvfb
 
@@ -92,3 +94,31 @@
 
 - name: Install OBS
   include: build-obs.yml
+
+- name: Mumble - Force OPUS on
+  lineinfile:
+    path: /etc/mumble-server.ini
+    regexp: "^;?opusthreshold="
+    line: "opusthreshold=0"
+  notify: Restart Mumble server
+- name: Mumble - Name root channel
+  lineinfile:
+    path: /etc/mumble-server.ini
+    regexp: "^;?registerName="
+    line: "registerName=Dev Day Regie"
+  notify: Restart Mumble server
+
+- name: NGINX - Configure RTMP
+  copy:
+    src: files/nginx-rtmp.conf
+    dest: /etc/nginx/nginx-rtmp.conf
+    owner: root
+    group: root
+    mode: "0600"
+- name: NGINX - Enable RTMP
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: "^include /etc/nginx/nginx-rtmp.conf;"
+    insertbefore: "^http \\{"
+    line: "include /etc/nginx/nginx-rtmp.conf;"
+  notify: Restart NGINX server

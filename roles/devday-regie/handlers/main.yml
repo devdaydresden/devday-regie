@@ -6,3 +6,11 @@
   service:
     name: lightdm
     state: restarted
+- name: Restart Mumble server
+  service:
+    name: mumble-server
+    state: restarted
+- name: Restart NGINX server
+  service:
+    name: nginx
+    state: restarted
