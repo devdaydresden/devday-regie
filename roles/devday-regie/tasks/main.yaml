@@ -87,7 +87,12 @@
     mode: "0600"
     owner: devday
     group: devday
-
+- name: Add SSH authorized keys to NX authorized keys
+  shell: |
+    set -e
+    cat /home/devday/.nx/config/authorized.crt /home/*/.ssh/authorized_keys >/home/devday/.nx/config/a
+    sort -u </home/devday/.nx/config/a >/home/devday/.nx/config/authorized.crt
+    rm -f /home/devday/.nx/config/a
 - name: Configure auto login
   lineinfile:
     path: /etc/lightdm/lightdm.conf
