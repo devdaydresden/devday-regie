@@ -4,11 +4,13 @@
     name: "{{ packages }}"
   vars:
     packages:
+      - chromium
       - joe
       - libnginx-mod-rtmp
       - mumble-server
       - nginx-extras
       - task-mate-desktop
+      - vlc
       - xvfb
 
 
