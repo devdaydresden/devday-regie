@@ -107,6 +107,12 @@
     regexp: "^;?registerName="
     line: "registerName=Dev Day Regie"
   notify: Restart Mumble server
+- name: Mumble - Set Welcome Text
+  lineinfile:
+    path: /etc/mumble-server.ini
+    regexp: "^;?welcometext="
+    line: "welcometext=\"<br/><b>Willkommen auf dem Mumble-Server der Dev-Day-Regie</b><br/>Dieser Server dient der Kommunikation zwischen Regie, Moderatoren und Speakern. Bitte seid freundlich und hilfsbereit. Bei Fragen wendet euch an info@devday.de.\""
+  notify: Restart Mumble server
 
 - name: NGINX - Configure RTMP
   copy:
