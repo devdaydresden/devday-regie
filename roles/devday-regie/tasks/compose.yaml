@@ -1,0 +1,30 @@
+- name: Create Docker Compose directory
+  file:
+    path: /etc/docker-compose
+    state: directory
+    mode: '0775'
+    owner: 'root'
+    group: 'docker'
+- name: install Docker Compose files
+  copy:
+    src: files/compose/{{ item }}
+    dest: /etc/docker-compose
+  with_items:
+    - admin-users.htpasswd
+    - docker-compose.yml
+  notify:
+    - reload docker-compose
+- name: fix TLD in labels
+  replace:
+    path: /etc/docker-compose/docker-compose.yml
+    regexp: '127\.0\.0\.1\.nip\.io'
+    replace: "{{ entrypoint_tld }}"
+  notify:
+    - reload docker-compose
+- name: fix ACME URL
+  replace:
+    path: /etc/docker-compose/docker-compose.yml
+    regexp: '"--certificatesResolvers\.le\.acme\.caServer=[^"]+".*'
+    replace: "\"--certificatesResolvers.le.acme.caServer={{ letsencrypt_acme_url }}\" # replaced"
+  notify:
+    - reload docker-compose

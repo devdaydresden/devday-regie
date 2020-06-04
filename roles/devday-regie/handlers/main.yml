@@ -14,3 +14,5 @@
   service:
     name: nginx
     state: restarted
+- name: reload docker-compose
+  command: "sh -c 'cd /etc/docker-compose && docker-compose up -d'"

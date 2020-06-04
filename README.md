@@ -53,6 +53,7 @@ Some tasks are much easier to accomplish manually than through Ansible. After (i
 * Turn off the screen saver and screen blanking (Preferences > Look and Feel > Screen Saver)
 * The Mumble Super User password is in `/var/log/mumble-server/mumble-server.log`. Look for a line like `1 => Password for 'SuperUser' set to '7vXwPJcUixZE'`.
 * Any OBS setup will need to be imported.
+* CodiMD users need to be created. CodiMD is configured to not allow self-registration, and the default rights are set so that only users can create new notes (pads). Use `docker-compose exec codimd bin/manage_users` to create users and set their initial password.
 
 # Notes
 

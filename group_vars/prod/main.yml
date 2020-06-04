@@ -1,1 +1,4 @@
 ---
+entrypoint_tld: devday.de
+# Production ACME server (default is the test server)
+letsencrypt_acme_url: "https://acme-v02.api.letsencrypt.org/directory"

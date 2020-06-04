@@ -1,0 +1,108 @@
+version: '3.3'
+
+services:
+  traefik:
+    image: "traefik:v2.2.1"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--api"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.email=stb@lassitu.de"
+      - "--certificatesresolvers.le.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      # - "--certificatesresolvers.le.acme.httpchallenge=true"
+      # - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--certificatesResolvers.le.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - acme:/acme
+      - "./admin-users.htpasswd:/htpasswd"
+    networks:
+      - dokuwiki
+      - codimd
+    labels:
+      - "traefik.enable=true"
+#      - "traefik.http.routers.traefik.rule=Host(`traefik.wiki.c3lingo.org`)"
+#      - "traefik.http.routers.traefik.service=api@internal"
+#      - "traefik.http.routers.traefik.middlewares=admin"
+#      - "traefik.http.routers.traefik.tls.certresolver=le"
+#      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.middlewares.admin.basicauth.usersfile=/htpasswd"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.redirs.rule=hostregexp(`{host:digital.127.0.0.1.nip.io}`)"
+      - "traefik.http.routers.redirs.entrypoints=web"
+      - "traefik.http.routers.redirs.middlewares=redirect-to-https"
+
+  # dokuwiki:
+  #   build: dokuwiki
+  #   restart: always
+  #   volumes:
+  #     - ./html:/var/www/html
+  #     - ./msmtprc:/etc/msmtprc
+  #     - ./dokuwiki-tmp:/tmp
+  #   networks:
+  #     - dokuwiki
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.dokuwiki.rule=Host(`digital.127.0.0.1.nip.io`)"
+  #     - "traefik.http.routers.dokuwiki.entrypoints=websecure"
+  #     - "traefik.http.routers.dokuwiki.tls.certresolver=le"
+
+  codimd_db:
+    image: postgres:9.6-alpine
+    restart: always
+    environment:
+      - "POSTGRES_USER=codimd"
+      - "POSTGRES_PASSWORD=QPtKjQW2txYug"
+      - "POSTGRES_DB=codimd"
+    volumes:
+      - "./codimd-db:/var/lib/postgresql/data"
+    networks:
+       - codimd
+
+  codimd:
+    image: quay.io/codimd/server:1.6
+    restart: always
+    depends_on:
+      - codimd_db
+    environment:
+      - "CMD_DB_URL=postgres://codimd:QPtKjQW2txYug@codimd_db:5432/codimd"
+      - "CMD_DOMAIN=digital.127.0.0.1.nip.io"
+      - "CMD_URL_PATH=pad"
+      - "CMD_URL_ADDPORT=443"
+      - "CMD_PROTOCOL_USESSL=true"
+      - "CMD_ALLOW_FREEURL=true"
+      - "CMD_ALLOW_EMAIL_REGISTER=false"
+      - "CMD_ALLOW_ANONYMOUS=false"
+      - "CMD_ALLOW_ANONYMOUS_EDITS=true"
+      - "CMD_ALLOW_ANONYMOUS_VIEWS=true"
+      - "CMD_DEFAULT_PERMISSION=locked"
+    volumes:
+      - "./codimd-data:/var/lib/foo"
+    networks:
+       - codimd
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.codimd.rule=Host(`digital.127.0.0.1.nip.io`) && PathPrefix(`/pad`)"
+      - "traefik.http.routers.codimd.entrypoints=websecure"
+      - "traefik.http.routers.codimd.tls.certresolver=le"
+      - "traefik.http.routers.codimd.service=codimd"
+      - "traefik.http.routers.codimd.middlewares=codimd"
+      - "traefik.http.middlewares.codimd.stripprefix.prefixes=/pad"
+      - "traefik.http.services.codimd.loadbalancer.server.port=3000"
+
+
+volumes:
+    acme: {}
+
+networks:
+  codimd: {}
+  dokuwiki: {}
