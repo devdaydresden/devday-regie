@@ -51,6 +51,7 @@ ansible-playbook -i hosts.yml playbook.yml
 Some tasks are much easier to accomplish manually than through Ansible. After (initial) deployment, the following steps need to be performed:
 * In MATE, the keyboard layout seems to be US even though the German layout is selected. Add the German layout again will make it work.
 * Turn off the screen saver and screen blanking (Preferences > Look and Feel > Screen Saver)
+* Make sure Alt Left Click is not bound by the window manager: go to Preferences > Look and Feel > Windows, Behaviour, Movement Key: Select Super. If the window manager take alt-click, you won't be able to adjust the crop of video sources by alt-dragging. You need to restart OBS for it to start receiving these events.
 * The Mumble Super User password is in `/var/log/mumble-server/mumble-server.log`. Look for a line like `1 => Password for 'SuperUser' set to '7vXwPJcUixZE'`.
 * Any OBS setup will need to be imported.
 * CodiMD users need to be created. CodiMD is configured to not allow self-registration, and the default rights are set so that only users can create new notes (pads). Use `docker-compose exec codimd bin/manage_users` to create users and set their initial password.
