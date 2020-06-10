@@ -98,6 +98,13 @@ services:
       - "traefik.http.routers.codimd.middlewares=codimd"
       - "traefik.http.middlewares.codimd.stripprefix.prefixes=/pad"
       - "traefik.http.services.codimd.loadbalancer.server.port=3000"
+      - "traefik.http.routers.redirdiscord.rule=Host(`digital.127.0.0.1.nip.io`) && PathPrefix(`/discord`)"
+      - "traefik.http.routers.redirdiscord.entrypoints=websecure"
+      - "traefik.http.routers.redirdiscord.tls.certresolver=le"
+      - "traefik.http.routers.redirdiscord.service=codimd"
+      - "traefik.http.routers.redirdiscord.middlewares=redirdiscord"
+      - "traefik.http.middlewares.redirdiscord.redirectregex.regex=.*"
+      - "traefik.http.middlewares.redirdiscord.redirectregex.replacement=https://discord.gg/pnZcCY5"
 
 
 volumes:
