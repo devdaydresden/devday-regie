@@ -105,6 +105,13 @@ services:
       - "traefik.http.routers.redirdiscord.middlewares=redirdiscord"
       - "traefik.http.middlewares.redirdiscord.redirectregex.regex=.*"
       - "traefik.http.middlewares.redirdiscord.redirectregex.replacement=https://discord.gg/pnZcCY5"
+      - "traefik.http.routers.redirroot.rule=Host(`digital.127.0.0.1.nip.io`) && Path(`/`)"
+      - "traefik.http.routers.redirroot.entrypoints=websecure"
+      - "traefik.http.routers.redirroot.tls.certresolver=le"
+      - "traefik.http.routers.redirroot.service=codimd"
+      - "traefik.http.routers.redirroot.middlewares=redirroot"
+      - "traefik.http.middlewares.redirroot.redirectregex.regex=.*"
+      - "traefik.http.middlewares.redirroot.redirectregex.replacement=https://devday.de/"
 
 
 volumes:
