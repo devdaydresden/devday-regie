@@ -8,6 +8,12 @@ Since our server has an IPMI KVM graphics card that is limited to 1024x768, and 
 
 Ingest RTMP sinks and preview sources are implemented through [NGINX](https://www.nginx.com) with the [nginx-rtmp-module](https://github.com/arut/nginx-rtmp-module).
 
+We're using [CodiMD](https://github.com/hackmdio/codimd) as a pad software:
+* To allow participants ask questions about a talk. We felt this is much easier to manage than a live chat stream.
+* Curate some additional information for participants.
+* As an internal tool for organizing the event.
+* For producing the intermission slide show. CodiMD allows you to create a document that can be shown as a slide show, including background images. The intermission slides were created this way, including the "up next" slide, which we edited during the event. In OBS, we added this as a browser source together with some music.
+
 
 ## Preparing a local environment
 
@@ -58,6 +64,11 @@ Some tasks are much easier to accomplish manually than through Ansible. After (i
 
 # Notes
 
+## Notes for Directors
+
+The [REGIE.md](./REGIE.md) document (German) has some notes the directors used during the event.
+
+
 ## Correct SSH key format for No Machine authentication
 
 The No Machine server is [configured to authenticate users through SSH keys](https://www.nomachine.com/AR02L00785).
@@ -69,3 +80,19 @@ ssh-keygen -m PEM -b 4096 -f roles/devday-regie/files/devday
 ```
 
 See https://www.nomachine.com/FR05Q03834.
+
+
+## nginx-rtmp Version
+
+We've had problems with the RTMP streams: sometimes the OBS-builtin VLC RTMP client would have trouble re-establishing the stream after it was stopped; this included no stream at all, or garbled or missing video.
+
+It seems that [nginx-rtmp-module](https://github.com/arut/nginx-rtmp-module) is not maintained anymore; there are close to 3000 forks of that repo. Some research into a better maintained version likely would be helpful with this.
+
+
+## No Audio Monitoring For Preview in OBS
+
+In one instance, the speaker was not sending audio with his stream. We were receiving his video, and he confirmed that his OBS audio meter was showing a signal, but he had played with the advanced audio settings and has disabled sending his audio to the stream. In OBS, you get to see the next scene in the preview, but there doesn't seem to be a way to get any information about audio until it's part of the program output. If we'd do this again, we would try to get a (separate) RTMP viewer up and running alongside OBS that would show us the ingest video and allow monitoring the audio. Alternatively, if OBS could be extended to also show audio sources for the preview in the audio meter section, that would be super helpful.
+
+## Docker Compose Setup
+
+The Docker Compose configuration in `roles/devday-regie/files/compose/docker-compose.yml` uses a Traefik config with a domain name of `127.0.0.1.nip.io`. This allows you to run a test setup right out of that directy. On deployment to the production host with Ansible, the domain is replaced with the production value. The kitchen setup replaces the domain with one that can be reached from the host machine.
