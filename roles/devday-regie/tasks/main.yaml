@@ -23,7 +23,7 @@
 - name: Download No Machine
   get_url:
     # from https://www.nomachine.com/download/linux&id=1
-    url: https://download.nomachine.com/download/6.10/Linux/nomachine_6.10.12_1_amd64.deb
+    url: https://download.nomachine.com/download/6.11/Linux/nomachine_6.11.2_1_amd64.deb
     dest: /var/tmp/nomachine.deb
 - name: Install No Machine
   apt: deb="/var/tmp/nomachine.deb"
