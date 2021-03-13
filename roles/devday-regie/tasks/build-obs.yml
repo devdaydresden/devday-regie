@@ -46,6 +46,8 @@
       - libxcb-xfixes0-dev
       - libx11-xcb-dev
       - libxcb1-dev
+      - libglfw3-dev
+      - libgles2-mesa-dev
 - name: Create build directory
   file:
     path: /home/src
@@ -53,14 +55,14 @@
 
 - name: Check if CEF is installed
   stat:
-    path: /home/src/cef_binary_3770_linux64
+    path: /home/src/cef_binary_4280_linux64
   register: cef_binary
 - name: Install CEF
   shell: |
     set -e
     cd /home/src
-    wget https://cdn-fastly.obsproject.com/downloads/cef_binary_3770_linux64.tar.bz2
-    tar -xjf ./cef_binary_3770_linux64.tar.bz2
+    wget https://cdn-fastly.obsproject.com/downloads/cef_binary_4280_linux64.tar.bz2
+    tar -xjf ./cef_binary_4280_linux64.tar.bz2
   when: not cef_binary.stat.exists
 
 - name: Check if OBS source has been checked out
@@ -71,7 +73,7 @@
   shell: |
     set -e
     cd /home/src
-    git clone --recursive https://github.com/obsproject/obs-studio.git
+    git clone --recursive --depth=1 --branch 26.1.2 https://github.com/obsproject/obs-studio.git
   when: not obs_source.stat.exists
 - name: Check if OBS is installed
   stat:
@@ -84,7 +86,7 @@
     export QT_QPA_PLATFORMTHEME="qt5ct"
     cd /home/src/obs-studio
     mkdir build && cd build
-    cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_3770_linux64" ..
+    cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_4280_linux64" ..
     make -j4
     sudo checkinstall --default --pkgname=obs-studio --fstrans=no --backup=no --pkgversion="$(date +%Y%m%d)-git" --deldoc=yes
   when: not obs.stat.exists

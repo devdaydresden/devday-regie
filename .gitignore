@@ -8,3 +8,4 @@ roles/*.*
 roles/devday-regie/files/devday
 *.iml
 roles/devday-regie/files/compose/codimd-db
+vendor/bundle

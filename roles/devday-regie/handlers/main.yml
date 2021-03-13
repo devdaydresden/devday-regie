@@ -2,9 +2,9 @@
   service:
     name: nxserver
     state: restarted
-- name: Restart lightdm
+- name: Restart xvfb
   service:
-    name: lightdm
+    name: xvfb
     state: restarted
 - name: Restart Mumble server
   service:

@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Xvfb for devday user
+
+[Service]
+ExecStart=/home/devday/startx.sh
+User=devday
+
+[Install]
+WantedBy=default.target
