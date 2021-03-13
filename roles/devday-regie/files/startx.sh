@@ -6,4 +6,5 @@ export DISPLAY=:0
 	sleep 30;
 	~/configure-session.sh
 ) &
-mate-session
+/usr/bin/pulseaudio --start
+/usr/bin/mate-session
