@@ -34,6 +34,10 @@
       apt:
         upgrade: yes
         update_cache: yes
+    - name: Create download cache
+      file:
+        path: /var/cache/dl
+        state: directory
     - name: Install Docker
       include_role:
         name: geerlingguy.docker

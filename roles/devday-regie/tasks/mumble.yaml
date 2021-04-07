@@ -1,0 +1,24 @@
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - mumble-server
+- name: Force OPUS on
+  lineinfile:
+    path: /etc/mumble-server.ini
+    regexp: "^;?opusthreshold="
+    line: "opusthreshold=0"
+  notify: Restart Mumble server
+- name: Name root channel
+  lineinfile:
+    path: /etc/mumble-server.ini
+    regexp: "^;?registerName="
+    line: "registerName=Dev Day Regie"
+  notify: Restart Mumble server
+- name: Set Welcome Text
+  lineinfile:
+    path: /etc/mumble-server.ini
+    regexp: "^;?welcometext="
+    line: "welcometext=\"<br/><b>Willkommen auf dem Mumble-Server der Dev-Day-Regie</b><br/>Dieser Server dient der Kommunikation zwischen Regie, Moderatoren und Speakern. Bitte seid freundlich und hilfsbereit. Bei Fragen wendet euch an info@devday.de.\""
+  notify: Restart Mumble server

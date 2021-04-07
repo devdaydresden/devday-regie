@@ -16,3 +16,7 @@
     state: restarted
 - name: reload docker-compose
   command: "sh -c 'cd /etc/docker-compose && docker-compose up -d'"
+- name: Load ALSA dummy module
+  shell: "modprobe snd_dummy"
+- name: Reload Pulse Audio
+  shell: "killall pulseaudio; sudo -u devday env DISPLAY=:0 pulseaudio --start"

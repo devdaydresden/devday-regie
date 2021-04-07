@@ -1,0 +1,10 @@
+.include /etc/pulse/default.pa
+
+load-module module-combine-sink
+load-module module-null-sink sink_name=OBS
+load-module module-loopback sink=OBS
+
+load-module module-virtual-source source_name=VirtualMic
+
+set-default-source OBS.monitor
+set-default-sink VirtualMic

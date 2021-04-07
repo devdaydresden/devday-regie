@@ -6,6 +6,9 @@ driver:
     cpus: 4
   network:
     - ["private_network", {ip: "192.168.33.44"}]
+  synced_folders:
+    - [".dlcache", "/var/cache/dl", "owner: 0, group: 0, mount_options: ['dmode=777', 'fmode=666']"]
+    - [".aptcache", "/var/cache/apt/archives", "owner: 0, group: 0, mount_options: ['dmode=777', 'fmode=666']"]
 
 provisioner:
   name: ansible_playbook

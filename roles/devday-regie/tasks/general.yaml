@@ -1,0 +1,104 @@
+
+- name: Configure ALSA dummy module loading
+  copy:
+    src: files/modules-alsa.conf
+    dest: /etc/modules-load.d/alsa.conf
+    mode: "0644"
+    owner: root
+    group: root
+- name: Configure ALSA dummy module
+  copy:
+    src: files/modprobe-alsa.conf
+    dest: /etc/modprobe.d/alsa.conf
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Load ALSA dummy module
+
+- name: Disable lightdm
+  service:
+    name: lightdm
+    enabled: false
+    state: stopped
+
+- name: Add devday user
+  user:
+    name: devday
+    shell: /bin/bash
+    password: "{{ '2020' | password_hash('sha512') }}"
+    groups:
+      - audio
+- name: Create Pulse Audio config dir
+  file:
+    path: /home/devday/.config/pulse
+    state: directory
+    recurse: true
+    mode: "0755"
+    owner: devday
+    group: devday
+- name: Configure Pulse Audio
+  copy:
+    src: files/default.pa
+    dest: /home/devday/.config/pulse/default.pa
+    mode: "0644"
+    owner: devday
+    group: devday
+  notify: Reload Pulse Audio
+- name: Add devday to NX users
+  shell: "/usr/NX/bin/nxserver --useradd devday --system"
+  notify: Restart NX server
+- name: Create devday NX config dir
+  file:
+    path: /home/devday/.nx/config
+    state: directory
+    recurse: true
+    mode: "0700"
+    owner: devday
+    group: devday
+- name: Add NX login key
+  # https://www.nomachine.com/AR02L00785
+  copy:
+    src: files/devday.pub
+    dest: /home/devday/.nx/config/authorized.crt
+    mode: "0600"
+    owner: devday
+    group: devday
+- name: Add SSH authorized keys to NX authorized keys
+  shell: |
+    set -e
+    cat /home/devday/.nx/config/authorized.crt /home/*/.ssh/authorized_keys >/home/devday/.nx/config/a
+    sort -u </home/devday/.nx/config/a >/home/devday/.nx/config/authorized.crt
+    rm -f /home/devday/.nx/config/a
+- name: Copy X start script
+  copy:
+    src: files/startx.sh
+    dest: /home/devday/startx.sh
+    mode: "0755"
+    owner: devday
+    group: root
+  notify: Restart NX server
+- name: Copy X session config script
+  copy:
+    src: files/configure-session.sh
+    dest: /home/devday/configure-session.sh
+    mode: "0755"
+    owner: devday
+    group: root
+  notify: Restart NX server
+- name: Copy X service unit
+  copy:
+    src: files/xvfb.service
+    dest: /etc/systemd/system/xvfb.service
+    mode: "0555"
+    owner: root
+    group: root
+  notify: Restart NX server
+- name: Activate xvfb service for devday
+  systemd:
+    daemon_reload: true
+    name: xvfb
+    enabled: true
+    state: started
+  notify:
+    - Restart xvfb
+    - Restart NX server

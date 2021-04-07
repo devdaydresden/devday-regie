@@ -1,0 +1,32 @@
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - nginx-extras
+- name: use non-default port
+  lineinfile:
+    path: /etc/nginx/sites-enabled/default
+    regexp: "^\\s*listen [0-9]+ default_server;"
+    line: "        listen 8080 default_server;"
+  notify: Restart NGINX server
+- name: use non-default port IPv6
+  lineinfile:
+    path: /etc/nginx/sites-enabled/default
+    regexp: "^\\s*listen \\[::\\]:.+ default_server;"
+    line: "        listen [::]:8080 default_server;"
+  notify: Restart NGINX server
+- name: Configure RTMP
+  copy:
+    src: files/nginx-rtmp.conf
+    dest: /etc/nginx/nginx-rtmp.conf
+    owner: root
+    group: root
+    mode: "0600"
+- name: Enable RTMP
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: "^include /etc/nginx/nginx-rtmp.conf;"
+    insertbefore: "^http \\{"
+    line: "include /etc/nginx/nginx-rtmp.conf;"
+  notify: Restart NGINX server

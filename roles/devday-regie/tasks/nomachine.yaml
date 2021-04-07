@@ -1,0 +1,43 @@
+#
+
+- name: Check if No Machine is installed
+  command: dpkg-query -W nomachine
+  register: nomachine_check_deb
+  failed_when: nomachine_check_deb.rc > 1
+  changed_when: nomachine_check_deb.rc == 1
+- name: Determine No Machine download URL
+  shell: |
+    curl 'https://www.nomachine.com/download/download&id=1' | sed -nEe 's#^.*saveck\('"'"'[^'"'"']*'"'"','"'"'(https://[^'"'"']*\.deb)'"'"'\).*$#\1#p'
+  # warn: "false"
+  register: nomachine_download_url
+  when: nomachine_check_deb.rc == 1
+- name: Check if DEB archive exists
+  stat:
+    path: /var/cache/dl/nomachine.deb
+  register: nomachine_dl_deb
+- name: Download No Machine
+  get_url:
+    url: "{{ nomachine_download_url.stdout }}"
+    dest: /var/cache/dl/nomachine.deb
+  when: nomachine_check_deb.rc == 1 and not nomachine_dl_deb.stat.exists
+- name: Install No Machine
+  apt: deb="/var/cache/dl/nomachine.deb"
+  when: nomachine_check_deb.rc == 1
+- name: Switch to key-based authentication
+  lineinfile:
+    path: /usr/NX/etc/server.cfg
+    regexp: "^#?AcceptedAuthenticationMethods"
+    line: "AcceptedAuthenticationMethods NX-private-key"
+  notify: Restart NX server
+- name: Enable NX user database
+  lineinfile:
+    path: /usr/NX/etc/server.cfg
+    regexp: "^#?EnableUserDB"
+    line: "EnableUserDB 1"
+  notify: Restart NX server
+- name: Disable local user confirmation
+  lineinfile:
+    path: /usr/NX/etc/server.cfg
+    regexp: "^#?PhysicalDesktopAuthorization"
+    line: "PhysicalDesktopAuthorization 0"
+  notify: Restart NX server

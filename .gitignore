@@ -1,3 +1,5 @@
+.aptcache
+.dlcache
 .kitchen
 .pytest_cache
 .vaultpw

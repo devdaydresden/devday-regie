@@ -1,0 +1,39 @@
+- name: Create build directory
+  file:
+    path: /home/src
+    state: directory
+
+- name: Check if CEF is installed
+  stat:
+    path: /home/src/cef_binary_4280_linux64
+  register: cef_binary
+- name: Install CEF
+  shell: |
+    set -e
+    cd /home/src
+    test -f /var/cache/dl/cef_binary_4280_linux64.tar.bz2 || \
+      wget -O /var/cache/dl/cef_binary_4280_linux64.tar.bz2 \
+      https://cdn-fastly.obsproject.com/downloads/cef_binary_4280_linux64.tar.bz2
+    tar -xjf /var/cache/dl/cef_binary_4280_linux64.tar.bz2
+  when: not cef_binary.stat.exists
+
+- name: Check if OBS source has been checked out
+  stat:
+    path: /home/src/obs-studio
+  register: obs_source
+- name: Check out OBS source
+  shell: |
+    set -e
+    cd /home/src
+    git clone --recursive --depth=1 --branch 26.1.2 https://github.com/obsproject/obs-studio.git
+  when: not obs_source.stat.exists
+- name: Build OBS
+  # https://github.com/obsproject/obs-studio/issues/2644#issuecomment-623168704
+  shell: |
+    set -e
+    export QT_QPA_PLATFORMTHEME="qt5ct"
+    cd /home/src/obs-studio
+    mkdir -p build && cd build
+    cmake -DUNIX_STRUCTURE=1 -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_BROWSER=ON -DCEF_ROOT_DIR="../../cef_binary_4280_linux64" ..
+    make -j4
+    sudo checkinstall -D --pakdir=/var/cache/dl --default --pkgname=obs-studio --fstrans=no --backup=no --pkgversion="{{ obs_version }}" --deldoc=yes

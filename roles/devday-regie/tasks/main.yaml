@@ -8,161 +8,27 @@
       - curl
       - joe
       - libnginx-mod-rtmp
-      - mumble-server
-      - nginx-extras
+      - pavucontrol
       - task-mate-desktop
+      - tmux
       - vlc
+      - x11vnc
       - xvfb
 
-
-- name: Check if No Machine is installed
-  command: dpkg-query -W nomachine
-  register: nomachine_check_deb
-  failed_when: nomachine_check_deb.rc > 1
-  changed_when: nomachine_check_deb.rc == 1
-- name: Download No Machine
-  get_url:
-    # from https://www.nomachine.com/download/linux&id=1
-    url: https://download.nomachine.com/download/7.2/Linux/nomachine_7.2.3_8_amd64.deb
-    dest: /var/tmp/nomachine.deb
 - name: Install No Machine
-  apt: deb="/var/tmp/nomachine.deb"
-  when: nomachine_check_deb.rc == 1
-- name: Switch to key-based authentication
-  lineinfile:
-    path: /usr/NX/etc/server.cfg
-    regexp: "^#?AcceptedAuthenticationMethods"
-    line: "AcceptedAuthenticationMethods NX-private-key"
-  notify: Restart NX server
-- name: Enable NX user database
-  lineinfile:
-    path: /usr/NX/etc/server.cfg
-    regexp: "^#?EnableUserDB"
-    line: "EnableUserDB 1"
-  notify: Restart NX server
-- name: Disable local user confirmation
-  lineinfile:
-    path: /usr/NX/etc/server.cfg
-    regexp: "^#?PhysicalDesktopAuthorization"
-    line: "PhysicalDesktopAuthorization 0"
-  notify: Restart NX server
-- name: Disable lightdm
-  service:
-    name: lightdm
-    enabled: false
-    state: stopped
+  include: nomachine.yaml
 
-- name: Add devday user
-  user:
-    name: devday
-    shell: /bin/bash
-    password: "{{ '2020' | password_hash('sha512') }}"
-- name: Add devday to NX users
-  shell: "/usr/NX/bin/nxserver --useradd devday --system"
-  notify: Restart NX server
-- name: Create devday NX config dir
-  file:
-    path: /home/devday/.nx/config
-    recurse: true
-    mode: "0700"
-    owner: devday
-    group: devday
-- name: Add NX login key
-  # https://www.nomachine.com/AR02L00785
-  copy:
-    src: files/devday.pub
-    dest: /home/devday/.nx/config/authorized.crt
-    mode: "0600"
-    owner: devday
-    group: devday
-- name: Add SSH authorized keys to NX authorized keys
-  shell: |
-    set -e
-    cat /home/devday/.nx/config/authorized.crt /home/*/.ssh/authorized_keys >/home/devday/.nx/config/a
-    sort -u </home/devday/.nx/config/a >/home/devday/.nx/config/authorized.crt
-    rm -f /home/devday/.nx/config/a
-- name: Copy X start script
-  copy:
-    src: files/startx.sh
-    dest: /home/devday/startx.sh
-    mode: "0755"
-    owner: devday
-    group: root
-  notify: Restart NX server
-- name: Copy X session config script
-  copy:
-    src: files/configure-session.sh
-    dest: /home/devday/configure-session.sh
-    mode: "0755"
-    owner: devday
-    group: root
-  notify: Restart NX server
-- name: Copy X service unit
-  copy:
-    src: files/xvfb.service
-    dest: /etc/systemd/system/xvfb.service
-    mode: "0555"
-    owner: root
-    group: root
-  notify: Restart NX server
-- name: Activate xvfb service for devday
-  systemd:
-    daemon_reload: true
-    name: xvfb
-    enabled: true
-    state: started
-  notify:
-    - Restart xvfb
-    - Restart NX server
+- name: General configuration
+  include: general.yaml
 
 - name: Install OBS
-  include: build-obs.yml
+  include: obs.yaml
 
-- name: Mumble - Force OPUS on
-  lineinfile:
-    path: /etc/mumble-server.ini
-    regexp: "^;?opusthreshold="
-    line: "opusthreshold=0"
-  notify: Restart Mumble server
-- name: Mumble - Name root channel
-  lineinfile:
-    path: /etc/mumble-server.ini
-    regexp: "^;?registerName="
-    line: "registerName=Dev Day Regie"
-  notify: Restart Mumble server
-- name: Mumble - Set Welcome Text
-  lineinfile:
-    path: /etc/mumble-server.ini
-    regexp: "^;?welcometext="
-    line: "welcometext=\"<br/><b>Willkommen auf dem Mumble-Server der Dev-Day-Regie</b><br/>Dieser Server dient der Kommunikation zwischen Regie, Moderatoren und Speakern. Bitte seid freundlich und hilfsbereit. Bei Fragen wendet euch an info@devday.de.\""
-  notify: Restart Mumble server
+- name: Configure Mumble
+  include: mumble.yaml
 
-- name: NGINX - use non-default port
-  lineinfile:
-    path: /etc/nginx/sites-enabled/default
-    regexp: "^\\s*listen [0-9]+ default_server;"
-    line: "        listen 8080 default_server;"
-  notify: Restart NGINX server
-- name: NGINX - use non-default port IPv6
-  lineinfile:
-    path: /etc/nginx/sites-enabled/default
-    regexp: "^\\s*listen \\[::\\]:.+ default_server;"
-    line: "        listen [::]:8080 default_server;"
-  notify: Restart NGINX server
-- name: NGINX - Configure RTMP
-  copy:
-    src: files/nginx-rtmp.conf
-    dest: /etc/nginx/nginx-rtmp.conf
-    owner: root
-    group: root
-    mode: "0600"
-- name: NGINX - Enable RTMP
-  lineinfile:
-    path: /etc/nginx/nginx.conf
-    regexp: "^include /etc/nginx/nginx-rtmp.conf;"
-    insertbefore: "^http \\{"
-    line: "include /etc/nginx/nginx-rtmp.conf;"
-  notify: Restart NGINX server
+- name: Configure NGINX
+  include: nginx.yaml
 
 - name: Configure Docker Compose
   include: compose.yaml
