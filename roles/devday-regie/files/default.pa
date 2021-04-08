@@ -1,10 +1,19 @@
 .include /etc/pulse/default.pa
 
-load-module module-combine-sink
-load-module module-null-sink sink_name=OBS
-load-module module-loopback sink=OBS
+#
+# Source: mic or line input
+# Source output: application recording
+# Sink: speaker or headphones
+# Sink input: application playing sound
+#
 
-load-module module-virtual-source source_name=VirtualMic
+# Create a dummy sink and source to relay sound from OBS to Chrome
+# In OBS, set the monitoring output to use "OBS"
+load-module module-null-sink sink_name=OBS sink_properties="device.description=OBS"
+update-source-proplist OBS.monitor device.description="OBS-Monitor"
 
-set-default-source OBS.monitor
-set-default-sink VirtualMic
+# Expose OBS.monitor as a virtual microphone so Chrome sees it (monitor sources are hidden in Chrome)
+load-module module-virtual-source source_name=MonMic master=OBS.monitor source_properties="device.description='Monitor Mic'"
+
+# det default input to monitoring microphone
+set-default-source MonMic
